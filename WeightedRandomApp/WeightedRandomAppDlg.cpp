@@ -65,6 +65,8 @@ void CWeightedRandomAppDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_ITEM_LIST, m_wndListCtrl);
 	DDX_Control(pDX, IDC_STATIC_RESULT, m_wndResult);
+	DDX_Control(pDX, IDC_ITEM_LIST, m_wndListCtrl);
+	DDX_Control(pDX, IDC_STATIC_RESULT, m_wndResult);
 }
 
 BEGIN_MESSAGE_MAP(CWeightedRandomAppDlg, CDialogEx)
@@ -74,6 +76,15 @@ BEGIN_MESSAGE_MAP(CWeightedRandomAppDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_ADD, &CWeightedRandomAppDlg::OnBnClickedBtnAdd)
 	ON_BN_CLICKED(IDC_BTN_DELETE, &CWeightedRandomAppDlg::OnBnClickedBtnDelete)
 	ON_BN_CLICKED(IDC_BTN_GET_ITEM, &CWeightedRandomAppDlg::OnBnClickedBtnGetItem)
+	ON_NOTIFY(NM_RCLICK, IDC_ITEM_LIST, &CWeightedRandomAppDlg::OnNMRClickItemList)
+
+	//ON_BN_CLICKED(IDC_BTN_ADD, &CWeightedRandomAppDlg::OnBnClickedBtnAdd)
+	//ON_BN_CLICKED(IDC_BTN_DELETE, &CWeightedRandomAppDlg::OnBnClickedBtnDelete)
+	//ON_BN_CLICKED(IDC_BTN_GET_ITEM, &CWeightedRandomAppDlg::OnBnClickedBtnGetItem)
+	//ON_NOTIFY(NM_RCLICK, IDC_ITEM_LIST, &CWeightedRandomAppDlg::OnNMRClickItemList)
+	// Новые обработчики
+	ON_COMMAND(ID_CONTEXT_ADD, &CWeightedRandomAppDlg::OnContextAdd)
+	ON_COMMAND(ID_CONTEXT_DELETE, &CWeightedRandomAppDlg::OnContextDelete)
 END_MESSAGE_MAP()
 
 
@@ -306,4 +317,43 @@ void CWeightedRandomAppDlg::OnBnClickedBtnGetItem()
 
 	// 5. Вывести результат
 	m_wndResult.SetWindowTextW(selectedName);
+}
+
+void CWeightedRandomAppDlg::OnNMRClickItemList(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	//LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	//// TODO: добавьте свой код обработчика уведомлений
+	//*pResult = 0;
+	////////////////////////////////////////////////////////////////////////////////////
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+
+	CMenu menu;
+	menu.CreatePopupMenu(); // Создаем всплывающее меню
+
+	// Проверяем, есть ли выделенный элемент, чтобы сделать пункт "Удалить" активным/неактивным
+	UINT deleteFlag = (m_wndListCtrl.GetFirstSelectedItemPosition() == NULL) ? MF_GRAYED : MF_ENABLED;
+
+	// Добавляем пункты в меню
+	menu.AppendMenu(MF_STRING, ID_CONTEXT_ADD, _T("Добавить строку"));
+	menu.AppendMenu(MF_STRING | deleteFlag, ID_CONTEXT_DELETE, _T("Удалить выделенную строку"));
+
+	// Получаем позицию курсора и отображаем меню
+	CPoint pt;
+	GetCursorPos(&pt);
+	menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
+
+	*pResult = 0;
+}
+
+// в CWeightedRandomAppDlg.cpp
+void CWeightedRandomAppDlg::OnContextAdd()
+{
+	// Просто вызываем тот же код, что и для кнопки
+	OnBnClickedBtnAdd();
+}
+
+void CWeightedRandomAppDlg::OnContextDelete()
+{
+	// Просто вызываем тот же код, что и для кнопки
+	OnBnClickedBtnDelete();
 }

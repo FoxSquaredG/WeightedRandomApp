@@ -30,10 +30,11 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+
+	afx_msg void OnContextAdd();
+	afx_msg void OnContextDelete();
+
 	DECLARE_MESSAGE_MAP()
-public:
-	Control m_wndListCtrl;
-	Control m_wndResult;
 
 private:
 	void AddNewItemToList(const CString& name, double weight, bool isActive);
@@ -42,4 +43,8 @@ public:
 	afx_msg void OnBnClickedBtnAdd();
 	afx_msg void OnBnClickedBtnDelete();
 	afx_msg void OnBnClickedBtnGetItem();
+	afx_msg void OnNMRClickItemList(NMHDR* pNMHDR, LRESULT* pResult);
+
+	CListCtrl m_wndListCtrl;
+	CStatic m_wndResult;
 };

@@ -6,6 +6,8 @@
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
 #define IDD_WEIGHTEDRANDOMAPP_DIALOG    102
+#define ID_CONTEXT_ADD                  102
+#define ID_CONTEXT_DELETE               103
 #define IDR_MAINFRAME                   128
 #define IDC_BTN_ADD                     1001
 #define IDC_BTN_DELETE                  1002
