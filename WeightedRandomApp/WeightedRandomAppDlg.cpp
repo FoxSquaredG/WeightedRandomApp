@@ -8,6 +8,10 @@
 #include "WeightedRandomAppDlg.h"
 #include "afxdialogex.h"
 
+#include <vector>   // Для хранения данных
+#include <random>   // Для случайного выбора
+#include <string>   // Для преобразования типов
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -59,12 +63,17 @@ CWeightedRandomAppDlg::CWeightedRandomAppDlg(CWnd* pParent /*=nullptr*/)
 void CWeightedRandomAppDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_ITEM_LIST, m_wndListCtrl);
+	DDX_Control(pDX, IDC_STATIC_RESULT, m_wndResult);
 }
 
 BEGIN_MESSAGE_MAP(CWeightedRandomAppDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BTN_ADD, &CWeightedRandomAppDlg::OnBnClickedBtnAdd)
+	ON_BN_CLICKED(IDC_BTN_DELETE, &CWeightedRandomAppDlg::OnBnClickedBtnDelete)
+	ON_BN_CLICKED(IDC_BTN_GET_ITEM, &CWeightedRandomAppDlg::OnBnClickedBtnGetItem)
 END_MESSAGE_MAP()
 
 
@@ -100,6 +109,27 @@ BOOL CWeightedRandomAppDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Мелкий значок
 
 	// TODO: добавьте дополнительную инициализацию
+	////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// Настройка расширенных стилей для List Control
+	// LVS_EX_CHECKBOXES добавит флажки в каждую строку
+	// LVS_EX_FULLROWSELECT для выделения всей строки
+	// LVS_EX_GRIDLINES для сетки
+	m_wndListCtrl.SetExtendedStyle(LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+	// Добавляем колонки в таблицу
+	m_wndListCtrl.InsertColumn(0, _T("#"), LVCFMT_LEFT, 30);
+	m_wndListCtrl.InsertColumn(1, _T("Наименование"), LVCFMT_LEFT, 200);
+	m_wndListCtrl.InsertColumn(2, _T("Вес"), LVCFMT_LEFT, 80);
+	// Четвертая колонка не нужна, т.к. флажок является частью первой колонки.
+	// Но мы можем добавить заголовок для ясности, хотя он будет пустым.
+	// Для простоты мы просто будем считать, что флажок - это и есть 4-я колонка.
+
+	// Добавим несколько строк для примера
+	AddNewItemToList(_T("Меч"), 10.0, true);
+	AddNewItemToList(_T("Щит"), 10.0, true);
+	AddNewItemToList(_T("Зелье здоровья"), 5.0, true);
+	AddNewItemToList(_T("Сломанный кинжал"), 1.0, false);
 
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
@@ -153,3 +183,127 @@ HCURSOR CWeightedRandomAppDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CWeightedRandomAppDlg::AddNewItemToList(const CString& name, double weight, bool isActive)
+{
+	int nIndex = m_wndListCtrl.GetItemCount();
+
+	// Вставляем новую строку. Номер пока временный.
+	m_wndListCtrl.InsertItem(nIndex, _T(""));
+
+	// Устанавливаем значения для подколонок
+	m_wndListCtrl.SetItemText(nIndex, 1, name);
+
+	CString strWeight;
+	strWeight.Format(_T("%.2f"), weight); // Форматируем вес до 2 знаков после запятой
+	m_wndListCtrl.SetItemText(nIndex, 2, strWeight);
+
+	// Устанавливаем состояние флажка (активность)
+	m_wndListCtrl.SetCheck(nIndex, isActive ? BST_CHECKED : BST_UNCHECKED);
+
+	// Перенумеровываем все строки
+	RenumberItems();
+}
+
+void CWeightedRandomAppDlg::RenumberItems()
+{
+	int count = m_wndListCtrl.GetItemCount();
+	for (int i = 0; i < count; ++i)
+	{
+		CString strNumber;
+		strNumber.Format(_T("%d"), i + 1);
+		m_wndListCtrl.SetItemText(i, 0, strNumber);
+	}
+}
+
+
+void CWeightedRandomAppDlg::OnBnClickedBtnAdd()
+{
+	// Для простоты примера, добавляем предопределенную строку.
+	// В реальном приложении здесь был бы вызов диалога для ввода данных.
+	AddNewItemToList(_T("Новый предмет"), 5.0, true);
+}
+
+void CWeightedRandomAppDlg::OnBnClickedBtnDelete()
+{
+	// Получаем индекс выделенной строки
+	POSITION pos = m_wndListCtrl.GetFirstSelectedItemPosition();
+	if (pos == NULL)
+	{
+		MessageBox(_T("Пожалуйста, выберите строку для удаления."), _T("Ошибка"), MB_OK | MB_ICONWARNING);
+		return;
+	}
+
+	int nItem = m_wndListCtrl.GetNextSelectedItem(pos);
+
+	// Удаляем строку
+	m_wndListCtrl.DeleteItem(nItem);
+
+	// После удаления нужно перенумеровать оставшиеся строки
+	RenumberItems();
+}
+
+void CWeightedRandomAppDlg::OnBnClickedBtnGetItem()
+{
+	// Структура для хранения данных активных предметов
+	struct ItemData
+	{
+		CString name;
+		double weight;
+	};
+
+	std::vector<ItemData> activeItems;
+	double totalWeight = 0.0;
+
+	// 1. Собрать все активные предметы и их веса
+	int count = m_wndListCtrl.GetItemCount();
+	for (int i = 0; i < count; ++i)
+	{
+		// Проверяем, активна ли строка (установлен ли флажок)
+		if (m_wndListCtrl.GetCheck(i) == BST_CHECKED)
+		{
+			CString name = m_wndListCtrl.GetItemText(i, 1);
+			CString strWeight = m_wndListCtrl.GetItemText(i, 2);
+
+			// Преобразуем CString в double
+			double weight = _ttof(strWeight);
+
+			if (weight > 0)
+			{
+				activeItems.push_back({ name, weight });
+				totalWeight += weight;
+			}
+		}
+	}
+
+	// 2. Проверить, есть ли из чего выбирать
+	if (activeItems.empty() || totalWeight <= 0)
+	{
+		m_wndResult.SetWindowTextW(_T("Нет активных предметов для выбора."));
+		return;
+	}
+
+	// 3. Выполнить взвешенный случайный выбор
+	// Инициализация генератора случайных чисел
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<> dis(0.0, totalWeight);
+
+	double randomValue = dis(gen);
+
+	CString selectedName = _T("Ошибка выбора");
+
+	// 4. Найти предмет, на который выпало случайное число
+	double currentWeightSum = 0.0;
+	for (const auto& item : activeItems)
+	{
+		currentWeightSum += item.weight;
+		if (randomValue <= currentWeightSum)
+		{
+			selectedName = item.name;
+			break;
+		}
+	}
+
+	// 5. Вывести результат
+	m_wndResult.SetWindowTextW(selectedName);
+}

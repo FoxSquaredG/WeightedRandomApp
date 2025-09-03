@@ -31,4 +31,15 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	Control m_wndListCtrl;
+	Control m_wndResult;
+
+private:
+	void AddNewItemToList(const CString& name, double weight, bool isActive);
+	void RenumberItems(); // Функция для перенумерации строк
+public:
+	afx_msg void OnBnClickedBtnAdd();
+	afx_msg void OnBnClickedBtnDelete();
+	afx_msg void OnBnClickedBtnGetItem();
 };
