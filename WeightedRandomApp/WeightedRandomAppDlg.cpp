@@ -364,14 +364,28 @@ void CWeightedRandomAppDlg::OnContextDelete()
 
 void CWeightedRandomAppDlg::OnEnKillFocusInPlaceEdit()
 {
+	//CString strNewText;
+	//m_editInPlace.GetWindowText(strNewText);
+
+	//// Обновляем текст в таблице
+	//m_wndListCtrl.SetItemText(m_nEditItem, m_nEditSubItem, strNewText);
+
+	//// Прячем поле ввода
+	//m_editInPlace.ShowWindow(SW_HIDE);
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	// Проверяем, существует ли еще окно, т.к. обработчик может быть вызван несколько раз
+	if (!m_editInPlace.GetSafeHwnd())
+		return;
+
 	CString strNewText;
 	m_editInPlace.GetWindowText(strNewText);
 
 	// Обновляем текст в таблице
 	m_wndListCtrl.SetItemText(m_nEditItem, m_nEditSubItem, strNewText);
 
-	// Прячем поле ввода
-	m_editInPlace.ShowWindow(SW_HIDE);
+	// Уничтожаем окно после использования
+	m_editInPlace.DestroyWindow();
 }
 
 void CWeightedRandomAppDlg::OnNMClickItemList(NMHDR* pNMHDR, LRESULT* pResult)
@@ -401,19 +415,39 @@ void CWeightedRandomAppDlg::OnNMClickItemList(NMHDR* pNMHDR, LRESULT* pResult)
 
 BOOL CWeightedRandomAppDlg::PreTranslateMessage(MSG* pMsg)
 {
-	// Проверяем, что это сообщение о нажатии клавиши и оно пришло от нашего поля ввода
+	//// Проверяем, что это сообщение о нажатии клавиши и оно пришло от нашего поля ввода
+	//if (pMsg->message == WM_KEYDOWN && pMsg->hwnd == m_editInPlace.GetSafeHwnd())
+	//{
+	//	if (pMsg->wParam == VK_RETURN) // Нажат Enter
+	//	{
+	//		// Вызываем обработчик потери фокуса, который сохранит данные
+	//		OnEnKillFocusInPlaceEdit();
+	//		return TRUE; // Сообщение обработано, дальше не передавать
+	//	}
+	//	else if (pMsg->wParam == VK_ESCAPE) // Нажат Escape
+	//	{
+	//		// Просто прячем поле без сохранения
+	//		m_editInPlace.ShowWindow(SW_HIDE);
+	//		return TRUE; // Сообщение обработано
+	//	}
+	//}
+
+	//return CDialogEx::PreTranslateMessage(pMsg);
+
+	/////////////////////////////////////////////////////////////////////////////////////
+		// Проверяем, что это сообщение о нажатии клавиши и оно пришло от нашего поля ввода
 	if (pMsg->message == WM_KEYDOWN && pMsg->hwnd == m_editInPlace.GetSafeHwnd())
 	{
 		if (pMsg->wParam == VK_RETURN) // Нажат Enter
 		{
-			// Вызываем обработчик потери фокуса, который сохранит данные
+			// Вызываем обработчик, который сохранит данные и уничтожит окно
 			OnEnKillFocusInPlaceEdit();
 			return TRUE; // Сообщение обработано, дальше не передавать
 		}
 		else if (pMsg->wParam == VK_ESCAPE) // Нажат Escape
 		{
-			// Просто прячем поле без сохранения
-			m_editInPlace.ShowWindow(SW_HIDE);
+			// При нажатии Escape просто уничтожаем окно без сохранения
+			m_editInPlace.DestroyWindow();
 			return TRUE; // Сообщение обработано
 		}
 	}
@@ -423,10 +457,49 @@ BOOL CWeightedRandomAppDlg::PreTranslateMessage(MSG* pMsg)
 
 void CWeightedRandomAppDlg::ShowInPlaceEdit(int nItem, int nSubItem)
 {
-	// Если поле ввода уже видимо, сначала спрячем его
+	//// Если поле ввода уже видимо, сначала спрячем его
+	//if (m_editInPlace.GetSafeHwnd())
+	//{
+	//	m_editInPlace.ShowWindow(SW_HIDE);
+	//}
+
+	//m_nEditItem = nItem;
+	//m_nEditSubItem = nSubItem;
+
+	//// Получаем геометрию ячейки
+	//CRect rectSubItem;
+	//m_wndListCtrl.GetSubItemRect(nItem, nSubItem, LVIR_BOUNDS, rectSubItem);
+
+	//// Получаем текущий текст ячейки
+	//CString strText = m_wndListCtrl.GetItemText(nItem, nSubItem);
+
+	//// Если поле ввода еще не создано, создаем его
+	//if (!m_editInPlace.GetSafeHwnd())
+	//{
+	//	DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL;
+	//	// Для колонки "Вес" можно добавить стиль ES_NUMBER, чтобы разрешить ввод только цифр
+	//	if (nSubItem == 2) {
+	//		dwStyle |= ES_NUMBER;
+	//	}
+	//	m_editInPlace.Create(dwStyle, rectSubItem, &m_wndListCtrl, IDC_INPLACE_EDIT);
+	//	m_editInPlace.SetFont(m_wndListCtrl.GetFont());
+	//}
+	//else
+	//{
+	//	// Если уже создано, просто перемещаем и меняем размер
+	//	m_editInPlace.MoveWindow(&rectSubItem);
+	//}
+
+	//m_editInPlace.SetWindowText(strText);
+	//m_editInPlace.ShowWindow(SW_SHOW);
+	//m_editInPlace.SetFocus();
+	//m_editInPlace.SetSel(0, -1); // Выделить весь текст
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Если поле ввода уже существует, уничтожаем его, чтобы создать заново с правильным стилем
 	if (m_editInPlace.GetSafeHwnd())
 	{
-		m_editInPlace.ShowWindow(SW_HIDE);
+		m_editInPlace.DestroyWindow();
 	}
 
 	m_nEditItem = nItem;
@@ -439,25 +512,19 @@ void CWeightedRandomAppDlg::ShowInPlaceEdit(int nItem, int nSubItem)
 	// Получаем текущий текст ячейки
 	CString strText = m_wndListCtrl.GetItemText(nItem, nSubItem);
 
-	// Если поле ввода еще не создано, создаем его
-	if (!m_editInPlace.GetSafeHwnd())
-	{
-		DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL;
-		// Для колонки "Вес" можно добавить стиль ES_NUMBER, чтобы разрешить ввод только цифр
-		if (nSubItem == 2) {
-			dwStyle |= ES_NUMBER;
-		}
-		m_editInPlace.Create(dwStyle, rectSubItem, &m_wndListCtrl, IDC_INPLACE_EDIT);
-		m_editInPlace.SetFont(m_wndListCtrl.GetFont());
-	}
-	else
-	{
-		// Если уже создано, просто перемещаем и меняем размер
-		m_editInPlace.MoveWindow(&rectSubItem);
+	// Определяем стиль будущего поля
+	DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL;
+
+	// Для колонки "Вес" (индекс 2) добавляем стиль ES_NUMBER
+	if (nSubItem == 2) {
+		dwStyle |= ES_NUMBER;
 	}
 
+	// Создаем поле с нужным стилем
+	m_editInPlace.Create(dwStyle, rectSubItem, &m_wndListCtrl, IDC_INPLACE_EDIT);
+	m_editInPlace.SetFont(m_wndListCtrl.GetFont());
+
 	m_editInPlace.SetWindowText(strText);
-	m_editInPlace.ShowWindow(SW_SHOW);
 	m_editInPlace.SetFocus();
 	m_editInPlace.SetSel(0, -1); // Выделить весь текст
 }
