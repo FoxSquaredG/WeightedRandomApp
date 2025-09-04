@@ -9,22 +9,25 @@
 #define ID_CONTEXT_ADD                  102
 #define ID_CONTEXT_DELETE               103
 #define IDR_MAINFRAME                   128
-
-// в resource.h
+#define IDR_MENU1                       130
 #define IDC_INPLACE_EDIT                131
-
 #define IDC_BTN_ADD                     1001
 #define IDC_BTN_DELETE                  1002
 #define IDC_BTN_GET_ITEM                1003
 #define IDC_ITEM_LIST                   1004
 #define IDC_STATIC_RESULT               1005
+#define ID_32771                        32771
+#define ID_32772                        32772
+#define ID_32773                        32773
+#define ID_FILE_RESET                   32774
+#define ID_FILE_EXIT                    32775
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        130
-#define _APS_NEXT_COMMAND_VALUE         32771
+#define _APS_NEXT_RESOURCE_VALUE        131
+#define _APS_NEXT_COMMAND_VALUE         32776
 #define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -89,6 +89,11 @@ BEGIN_MESSAGE_MAP(CWeightedRandomAppDlg, CDialogEx)
 	// Добавляем новую строку
 	ON_EN_KILLFOCUS(IDC_INPLACE_EDIT, &CWeightedRandomAppDlg::OnEnKillFocusInPlaceEdit)
 
+	// Новые обработчики меню
+	ON_COMMAND(ID_FILE_RESET, &CWeightedRandomAppDlg::OnFileReset)
+	ON_COMMAND(ID_FILE_EXIT, &CWeightedRandomAppDlg::OnFileExit)
+	ON_COMMAND(ID_APP_ABOUT, &CWeightedRandomAppDlg::OnHelpAbout)
+
 	ON_NOTIFY(NM_CLICK, IDC_ITEM_LIST, &CWeightedRandomAppDlg::OnNMClickItemList)
 END_MESSAGE_MAP()
 
@@ -140,11 +145,18 @@ BOOL CWeightedRandomAppDlg::OnInitDialog()
 	// Но мы можем добавить заголовок для ясности, хотя он будет пустым.
 	// Для простоты мы просто будем считать, что флажок - это и есть 4-я колонка.
 
-	// Добавим несколько строк для примера
-	AddNewItemToList(_T("Меч"), 10.0, true);
-	AddNewItemToList(_T("Щит"), 10.0, true);
-	AddNewItemToList(_T("Зелье здоровья"), 5.0, true);
-	AddNewItemToList(_T("Сломанный кинжал"), 1.0, false);
+	//// Добавим несколько строк для примера
+	//AddNewItemToList(_T("Меч"), 10.0, true);
+	//AddNewItemToList(_T("Щит"), 10.0, true);
+	//AddNewItemToList(_T("Зелье здоровья"), 5.0, true);
+	//AddNewItemToList(_T("Сломанный кинжал"), 1.0, false);
+	ResetList();
+
+	// Загружаем и устанавливаем главное меню
+	CMenu menu;
+	menu.LoadMenu(IDR_MENU1); // Убедитесь, что ID совпадает с ID вашего ресурса меню
+	SetMenu(&menu);
+	menu.Detach(); // ВАЖНО: отсоединяем объект, чтобы меню не было уничтожено при выходе из функции
 
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
@@ -388,6 +400,25 @@ void CWeightedRandomAppDlg::OnEnKillFocusInPlaceEdit()
 	m_editInPlace.DestroyWindow();
 }
 
+void CWeightedRandomAppDlg::OnFileReset()
+{
+	if (MessageBox(_T("Вы уверены, что хотите сбросить все данные?"), _T("Подтверждение"), MB_YESNO | MB_ICONQUESTION) == IDYES)
+	{
+		ResetList();
+	}
+}
+
+void CWeightedRandomAppDlg::OnFileExit()
+{
+	OnOK(); // или EndDialog(IDOK);
+}
+
+void CWeightedRandomAppDlg::OnHelpAbout()
+{
+	CAboutDlg aboutDlg;
+	aboutDlg.DoModal();
+}
+
 void CWeightedRandomAppDlg::OnNMClickItemList(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	//LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
@@ -527,4 +558,15 @@ void CWeightedRandomAppDlg::ShowInPlaceEdit(int nItem, int nSubItem)
 	m_editInPlace.SetWindowText(strText);
 	m_editInPlace.SetFocus();
 	m_editInPlace.SetSel(0, -1); // Выделить весь текст
+}
+
+void CWeightedRandomAppDlg::ResetList()
+{
+	m_wndListCtrl.DeleteAllItems(); // Сначала очищаем всю таблицу
+
+	// Теперь добавляем начальные данные
+	AddNewItemToList(_T("Меч"), 10.0, true);
+	AddNewItemToList(_T("Щит"), 10.0, true);
+	AddNewItemToList(_T("Зелье здоровья"), 5.0, true);
+	AddNewItemToList(_T("Сломанный кинжал"), 1.0, false);
 }

@@ -36,6 +36,11 @@ protected:
 
 	afx_msg void OnEnKillFocusInPlaceEdit();
 
+	//menu
+	afx_msg void OnFileReset();
+	afx_msg void OnFileExit();
+	afx_msg void OnHelpAbout();
+
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -48,6 +53,8 @@ private:
 
 	// Вспомогательная функция для показа поля редактирования
 	void ShowInPlaceEdit(int nItem, int nSubItem);
+
+	void ResetList();
 
 public:
 	afx_msg void OnBnClickedBtnAdd();
