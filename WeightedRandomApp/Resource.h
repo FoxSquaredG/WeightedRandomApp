@@ -9,6 +9,10 @@
 #define ID_CONTEXT_ADD                  102
 #define ID_CONTEXT_DELETE               103
 #define IDR_MAINFRAME                   128
+
+// в resource.h
+#define IDC_INPLACE_EDIT                131
+
 #define IDC_BTN_ADD                     1001
 #define IDC_BTN_DELETE                  1002
 #define IDC_BTN_GET_ITEM                1003

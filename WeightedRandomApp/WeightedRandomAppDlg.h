@@ -34,11 +34,21 @@ protected:
 	afx_msg void OnContextAdd();
 	afx_msg void OnContextDelete();
 
+	afx_msg void OnEnKillFocusInPlaceEdit();
+
 	DECLARE_MESSAGE_MAP()
 
 private:
 	void AddNewItemToList(const CString& name, double weight, bool isActive);
 	void RenumberItems(); // Функция для перенумерации строк
+
+	CEdit m_editInPlace;   // Наше поле для редактирования
+	int m_nEditItem;       // Индекс строки, которую редактируем
+	int m_nEditSubItem;    // Индекс колонки, которую редактируем
+
+	// Вспомогательная функция для показа поля редактирования
+	void ShowInPlaceEdit(int nItem, int nSubItem);
+
 public:
 	afx_msg void OnBnClickedBtnAdd();
 	afx_msg void OnBnClickedBtnDelete();
@@ -47,4 +57,7 @@ public:
 
 	CListCtrl m_wndListCtrl;
 	CStatic m_wndResult;
+	afx_msg void OnNMClickItemList(NMHDR* pNMHDR, LRESULT* pResult);
+
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
